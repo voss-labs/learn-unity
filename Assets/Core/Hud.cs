@@ -10,10 +10,10 @@ static class Hud
     const string NextPlace = "Next place";
     const int DiscSize = 128;
 
-    static readonly Color Ink = new(0.941f, 0.933f, 0.961f);
-    static readonly Color Panel = new(0.02f, 0.02f, 0.063f, 0.72f);
-    static readonly Color StickRing = new(0.941f, 0.933f, 0.961f, 0.2f);
-    static readonly Color StickKnob = new(0.302f, 0.486f, 1f, 0.9f);
+    static readonly Color Ink = new(0.98f, 0.98f, 0.98f);
+    static readonly Color Panel = new(0.039f, 0.039f, 0.039f, 0.72f);
+    static readonly Color StickRing = new(0.98f, 0.98f, 0.98f, 0.2f);
+    static readonly Color StickKnob = new(0.984f, 0.478f, 0.235f, 0.9f);
 
     static Texture2D panel, ring, knob;
     static GUIStyle title, body, button;
