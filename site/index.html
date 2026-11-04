@@ -4,120 +4,203 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Learn Unity by walking through real worlds, opening their code, and shipping your own. A VOSS Labs project." />
-    <meta name="theme-color" content="#050510" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f5f3f0" media="(prefers-color-scheme: light)" />
+    <meta property="og:title" content="learn-unity | VOSS Labs" />
+    <meta property="og:description" content="Walk through three worlds on your computer or phone. Then build the fourth." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#050510" />
     <title>learn-unity | VOSS Labs</title>
-    <link rel="icon" href="data:," />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="images/voss-logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+    <script>
+      if (localStorage.getItem("theme") === "light") document.documentElement.setAttribute("data-theme", "light");
+    </script>
     <style>
       :root {
-        color-scheme: dark light;
         --bg: #050510;
+        --glass: rgba(255, 255, 255, 0.04);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-hover: rgba(255, 255, 255, 0.07);
         --text: #f0eef5;
-        --text-2: #9b97a8;
-        --line: #2a2a40;
-        --grid: #5c5c8c;
-        --lamp: #ffc58f;
-        --gutter: clamp(16px, 4vw, 56px);
-        font: 500 17px/1.6 Manrope, system-ui, sans-serif;
+        --text-secondary: #9b97a8;
+        --text-muted: #5c586a;
+        --accent-1: #4d7cff;
+        --accent-2: #6e8efb;
+        --accent-3: #8b5cf6;
+        --gradient-main: linear-gradient(135deg, #4d7cff, #6e8efb, #8b5cf6);
+        --grid: rgba(110, 142, 251, 0.45);
+        --font-main: "Manrope", system-ui, sans-serif;
+        --font-mono: "Fira Code", monospace;
+        --pad: clamp(1rem, 5vw, 5rem);
+        --radius: 16px;
+        color-scheme: dark;
       }
-      @media (prefers-color-scheme: light) {
-        :root {
-          --bg: #f5f3f0;
-          --text: #0c0c14;
-          --text-2: #4a4856;
-          --line: #d6d2ca;
-          --grid: #a39d91;
-          --lamp: #8f4a12;
-        }
+      [data-theme="light"] {
+        --bg: #f5f3f0;
+        --glass: rgba(255, 255, 255, 0.55);
+        --glass-border: rgba(0, 0, 0, 0.06);
+        --glass-hover: rgba(255, 255, 255, 0.7);
+        --text: #0c0c14;
+        --text-secondary: #4a4856;
+        --text-muted: #6b6878;
+        --accent-1: #3b63e0;
+        --accent-2: #5a75f0;
+        --accent-3: #7047d6;
+        --gradient-main: linear-gradient(135deg, #3b63e0, #5a75f0, #7047d6);
+        --grid: rgba(59, 99, 224, 0.4);
+        color-scheme: light;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); }
-      a { color: inherit; text-underline-offset: 3px; }
-      a:hover { color: var(--lamp); }
-      :focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
-      code { font: 400 0.9em "Fira Code", ui-monospace, monospace; }
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+      body { position: relative; font-family: var(--font-main); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; transition: background 0.4s, color 0.4s; }
+      ::selection { background: var(--accent-1); color: white; }
+      a { color: inherit; text-decoration: none; }
+      img { display: block; }
+      :focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; }
+      .glass { background: var(--glass); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius); transition: background 0.4s, border-color 0.4s; }
+      .gradient-text { background: var(--gradient-main); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
-      .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding: 20px var(--gutter); }
-      .top strong { font-weight: 800; letter-spacing: -0.01em; }
-      .top nav { display: flex; gap: 20px; }
+      .orbs { position: absolute; inset: 0 0 auto; height: 900px; overflow: hidden; pointer-events: none; z-index: -1; }
+      .orb { position: absolute; border-radius: 50%; filter: blur(100px); }
+      .orb-1 { width: 500px; height: 500px; top: -10%; left: -10%; background: radial-gradient(circle, rgba(77, 124, 255, 0.2), transparent 70%); }
+      .orb-2 { width: 420px; height: 420px; top: 18%; right: -8%; background: radial-gradient(circle, rgba(139, 92, 246, 0.18), transparent 70%); }
+      [data-theme="light"] .orb { opacity: 0.35; }
 
-      .intro { padding: clamp(24px, 3.5vw, 44px) var(--gutter) clamp(24px, 2.6vw, 32px); }
-      h1 { margin: 0; font-size: clamp(2.5rem, 5.6vw, 5.4rem); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; }
-      h1 span { display: block; }
-      .intro p { max-width: 62ch; margin: 18px 0 0; color: var(--text-2); font-size: 1.05rem; }
+      .nav { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; margin: 1rem var(--pad); padding: 0.75rem 1.5rem; border-radius: 100px; }
+      .nav-brand { display: flex; align-items: center; gap: 0.625rem; transition: opacity 0.2s; }
+      .nav-brand:hover { opacity: 0.7; }
+      .nav-brand img { border-radius: 6px; }
+      .nav-name { font-weight: 700; font-size: 0.875rem; letter-spacing: 0.04em; }
+      .nav-links { display: flex; gap: 2rem; }
+      .nav-links a { font-size: 0.8125rem; color: var(--text-secondary); font-weight: 500; transition: color 0.2s; }
+      .nav-links a:hover { color: var(--text); }
+      .nav-right { display: flex; align-items: center; gap: 1rem; }
+      .nav-cta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--accent-2); transition: color 0.2s; }
+      .nav-cta:hover { color: var(--accent-3); }
+      .nav-cta-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); animation: pulse 2s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+      .theme-toggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 50%; cursor: pointer; color: var(--text-secondary); transition: all 0.3s; }
+      .theme-toggle:hover { color: var(--text); border-color: var(--accent-2); background: var(--glass-hover); }
+      .icon-sun { display: none; }
+      [data-theme="light"] .icon-moon { display: none; }
+      [data-theme="light"] .icon-sun { display: block; }
 
-      .doors { display: flex; gap: 6px; height: clamp(420px, calc(100vh - 432px), 680px); padding: 0 var(--gutter); border-bottom: 1px solid var(--line); }
-      .door { position: relative; display: flex; flex: 1 1 0; flex-direction: column; justify-content: flex-end; min-width: 0; padding: 20px; overflow: hidden; color: #f0eef5; background: #0e0e1c; transition: flex-grow 320ms ease; }
-      .door:hover, .door:focus-within { flex-grow: 1.7; }
+      .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: clamp(1.5rem, 4vw, 3rem) var(--pad) clamp(1.5rem, 3vw, 2.5rem); }
+      .hero-badge { display: inline-flex; align-items: center; gap: 0.625rem; padding: 0.5rem 1.25rem; border-radius: 100px; font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-secondary); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.75rem; }
+      .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-1); flex: none; }
+      h1 { display: flex; flex-direction: column; align-items: center; margin-bottom: 1rem; }
+      .title-top { font-size: clamp(1.25rem, 3vw, 2.5rem); font-weight: 300; color: var(--text-secondary); letter-spacing: -0.01em; }
+      .title-main { font-size: clamp(3rem, 9vw, 7.5rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+      .hero p { max-width: 60ch; color: var(--text-secondary); }
+      .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; }
+      .actions.left { justify-content: flex-start; }
+      .btn-glow { display: inline-flex; align-items: center; gap: 0.625rem; padding: 0.8rem 2rem; background: var(--gradient-main); color: white; font-weight: 600; font-size: 0.875rem; border-radius: 100px; transition: all 0.3s; box-shadow: 0 0 20px rgba(77, 124, 255, 0.3); }
+      .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(77, 124, 255, 0.5); }
+      .btn-glass { padding: 0.8rem 2rem; font-weight: 600; font-size: 0.875rem; border-radius: 100px; color: var(--text-secondary); transition: all 0.2s; }
+      .btn-glass:hover { background: var(--glass-hover); color: var(--text); }
+
+      .doors { display: flex; gap: 0.75rem; height: clamp(420px, 62vh, 620px); padding: 0 var(--pad); scroll-margin-top: 1rem; }
+      .door { position: relative; display: flex; flex: 1 1 0; flex-direction: column; justify-content: flex-end; min-width: 0; padding: 1.25rem; overflow: hidden; color: #f0eef5; background: #0e0e1c; border: 1px solid var(--glass-border); border-radius: var(--radius); transition: flex-grow 320ms ease, border-color 0.3s; }
+      .door:hover, .door:focus-within { flex-grow: 1.6; border-color: rgba(77, 124, 255, 0.5); }
       .door img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-      .door::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(5 5 16 / 0.92), rgb(5 5 16 / 0.2) 55%, transparent); }
+      .door::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(5, 5, 16, 0.94), rgba(5, 5, 16, 0.25) 55%, transparent); }
       .door > div { position: relative; z-index: 1; }
-      .door h2 { margin: 0; font-size: clamp(1.4rem, 2.2vw, 1.9rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
-      .door p { margin: 8px 0 12px; max-width: 34ch; font-size: 0.92rem; line-height: 1.45; color: #d5d2de; }
-      .door a { color: inherit; }
-      .door .walk { font-weight: 700; }
+      .door h2 { font-size: clamp(1.35rem, 2.1vw, 1.75rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+      .door p { margin: 0.5rem 0 0.75rem; max-width: 34ch; font-size: 0.875rem; line-height: 1.45; color: #d5d2de; }
+      .door .walk { font-size: 0.875rem; font-weight: 700; color: #a9bcff; }
       .door .walk::before { content: ""; position: absolute; inset: 0; z-index: 1; }
-      .door:has(.walk:hover) .walk { color: #ffc58f; }
-      .door .how { position: relative; z-index: 2; margin-left: 14px; font-size: 0.92rem; }
-
-      .door.yours { background: var(--bg); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+      .door .how { position: relative; z-index: 2; margin-left: 0.875rem; font-size: 0.875rem; text-decoration: underline; text-underline-offset: 3px; }
+      .door.yours { background: var(--glass); color: var(--text); border-style: dashed; border-color: var(--grid); }
       .door.yours::after { display: none; }
-      .door.yours p { color: var(--text-2); }
-      .door.yours .grid { position: absolute; left: -200%; right: -200%; bottom: 0; height: 1600px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 56px 56px; background-position: center bottom; transform: perspective(640px) rotateX(52deg); transform-origin: bottom; mask-image: linear-gradient(to top, black 15%, transparent 85%); }
-      .door.yours > div { background: linear-gradient(to top, var(--bg) 78%, transparent); margin: -20px; padding: 44px 20px 20px; }
-      .door.yours:hover, .door.yours:focus-within { box-shadow: inset 0 0 0 1px var(--lamp); }
+      .door.yours p { color: var(--text-secondary); }
+      .door.yours .walk { color: var(--accent-2); }
+      .door.yours .grid { position: absolute; left: -200%; right: -200%; bottom: 0; height: 1600px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 56px 56px; background-position: center bottom; transform: perspective(640px) rotateX(52deg); transform-origin: bottom; -webkit-mask-image: linear-gradient(to top, black 15%, transparent 85%); mask-image: linear-gradient(to top, black 15%, transparent 85%); }
+      .door.yours > div { margin: -1.25rem; padding: 2.5rem 1.25rem 1.25rem; background: linear-gradient(to top, var(--bg) 78%, transparent); }
 
-      .note { margin: 12px var(--gutter) 0; color: var(--text-2); font-size: 0.88rem; }
+      .note { margin: 1rem var(--pad) 0; color: var(--text-secondary); font-size: 0.875rem; text-align: center; }
 
-      .split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px clamp(32px, 6vw, 96px); padding: clamp(56px, 8vw, 112px) var(--gutter) 0; }
-      .split h2 { margin: 0; font-size: clamp(1.9rem, 3.6vw, 3rem); font-weight: 800; line-height: 1.08; letter-spacing: -0.025em; }
-      .split > div > p { margin: 16px 0 0; max-width: 42ch; color: var(--text-2); }
-
-      ol { margin: 0; padding: 0; list-style: none; counter-reset: step; }
-      li { counter-increment: step; display: grid; grid-template-columns: 2.2em minmax(0, 1fr); padding: 14px 0; border-top: 1px solid var(--line); }
-      li:last-child { border-bottom: 1px solid var(--line); }
-      li::before { content: counter(step); color: var(--text-2); font-weight: 700; font-variant-numeric: tabular-nums; }
-      li > * { grid-column: 2; margin: 0; }
+      .section { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 2rem clamp(2rem, 6vw, 6rem); padding: clamp(3.5rem, 7vw, 6rem) var(--pad) 0; }
+      .section-tag { display: inline-flex; padding: 0.5rem 1.25rem; border-radius: 100px; font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 1.5rem; }
+      .section h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+      .section > div > p { margin-top: 1rem; max-width: 42ch; color: var(--text-secondary); }
+      .steps { padding: 0.5rem 1.5rem; }
+      ol { list-style: none; counter-reset: step; }
+      li { counter-increment: step; display: grid; grid-template-columns: 2.25em minmax(0, 1fr); padding: 0.875rem 0; border-top: 1px solid var(--glass-border); }
+      li:first-child { border-top: 0; }
+      li::before { content: counter(step); color: var(--accent-2); font-family: var(--font-mono); font-size: 0.875rem; }
+      li > * { grid-column: 2; }
       li strong, li a { font-weight: 700; }
-      li span { display: block; color: var(--text-2); font-size: 0.94rem; }
+      li a:hover { color: var(--accent-2); }
+      li span { display: block; color: var(--text-secondary); font-size: 0.9rem; }
+      code { font-family: var(--font-mono); font-size: 0.85em; }
 
-      .action { display: inline-block; margin-top: 24px; padding: 11px 18px; background: var(--text); color: var(--bg); font-weight: 700; text-decoration: none; }
-      .action:hover { background: var(--lamp); color: var(--bg); }
-
-      footer { margin-top: clamp(56px, 8vw, 112px); padding: 24px var(--gutter) 40px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 0.88rem; }
-      footer p { max-width: 80ch; margin: 0 0 6px; }
+      .footer { padding: clamp(3.5rem, 7vw, 6rem) var(--pad) 2rem; }
+      .footer-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem 2rem; padding: 1.5rem 2rem; margin-bottom: 1.5rem; }
+      .footer-brand { display: flex; align-items: center; gap: 0.75rem; }
+      .footer-brand img { border-radius: 6px; }
+      .brand-name { display: block; font-weight: 700; font-size: 0.875rem; }
+      .brand-full { display: block; font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.125rem; }
+      .footer-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; }
+      .footer-nav a { font-size: 0.8125rem; color: var(--text-secondary); transition: color 0.2s; }
+      .footer-nav a:hover { color: var(--text); }
+      .footer small { display: block; max-width: 90ch; margin: 0 auto; color: var(--text-secondary); font-size: 0.75rem; text-align: center; }
+      .footer small a { text-decoration: underline; text-underline-offset: 2px; }
 
       @media (max-width: 860px) {
-        .doors { flex-direction: column; height: auto; padding-bottom: 6px; }
-        .door { flex: none; height: 280px; }
+        .nav { padding: 0.625rem 0.875rem; }
+        .nav-links { display: none; }
+        .doors { flex-direction: column; height: auto; }
+        .door { flex: none; height: 300px; }
         .door:hover, .door:focus-within { flex-grow: 0; }
-        .split { grid-template-columns: minmax(0, 1fr); }
+        .section { grid-template-columns: minmax(0, 1fr); }
+        .footer-top { padding: 1.25rem; }
       }
       @media (prefers-reduced-motion: reduce) {
-        .door { transition: none; }
+        html { scroll-behavior: auto; }
+        .door, .btn-glow { transition: none; }
+        .nav-cta-dot { animation: none; }
       }
     </style>
   </head>
   <body>
-    <header class="top">
-      <strong>learn-unity</strong>
-      <nav aria-label="Main">
+    <div class="orbs" aria-hidden="true"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+    <nav class="nav glass" aria-label="Primary navigation">
+      <a href="./" class="nav-brand" aria-label="learn-unity home">
+        <img src="images/voss-logo.png" alt="" width="32" height="32" />
+        <span class="nav-name">learn-unity</span>
+      </a>
+      <div class="nav-links">
+        <a href="#worlds">Worlds</a>
         <a href="#lessons">Lessons</a>
-        <a href="https://github.com/voss-labs/learn-unity">GitHub</a>
-        <a href="https://vosslabs.org">VOSS Labs</a>
-      </nav>
-    </header>
+        <a href="#build">Build yours</a>
+      </div>
+      <div class="nav-right">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light and dark mode">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+        </button>
+        <a href="https://github.com/voss-labs/learn-unity" class="nav-cta" target="_blank" rel="noopener"><span class="nav-cta-dot" aria-hidden="true"></span>GitHub</a>
+      </div>
+    </nav>
 
     <main>
-      <section class="intro">
-        <h1><span>Walk through three worlds.</span> <span>Then build the fourth.</span></h1>
-        <p>Play a world in your browser, open the same world in Unity, change how it works, and add your own with a pull request. When it merges, it goes live here. No Unity experience needed.</p>
+      <section class="hero">
+        <div class="hero-badge glass"><span class="badge-dot" aria-hidden="true"></span>A VOSS Labs project</div>
+        <h1>
+          <span class="title-top">Walk through three worlds.</span>
+          <span class="title-main">Build the <span class="gradient-text">fourth</span>.</span>
+        </h1>
+        <p>Play a world on your computer or phone, open the same world in Unity, change how it works, and add your own with a pull request. When it merges, it goes live here. No Unity experience needed.</p>
+        <div class="actions">
+          <a class="btn-glow" href="#worlds">Walk a world</a>
+          <a class="btn-glass glass" href="https://github.com/voss-labs/learn-unity/blob/main/docs/setup.md">Set up Unity</a>
+        </div>
       </section>
 
-      <section class="doors" aria-label="Worlds">
+      <section class="doors" id="worlds" aria-label="Worlds">
         <article class="door">
           <img src="images/starter.jpg" style="object-position: 36% 50%" alt="A walled courtyard with a ramp, low blocks and a spinning cube on a pedestal" />
           <div>
@@ -154,42 +237,68 @@
           </div>
         </article>
       </section>
-      <p class="note">Walking needs a computer with a keyboard and mouse. Each world is an 11 MB to 48 MB download.</p>
+      <p class="note">On a phone, your left thumb moves and your right thumb looks. Each world is a 10 MB to 28 MB download there.</p>
 
-      <section class="split" id="lessons">
+      <section class="section" id="lessons">
         <div>
-          <h2>Six lessons, in order</h2>
-          <p>Each one opens real code from these worlds and ends with something for you to change. You learn it by doing it, and you can stop reading the moment you want to build.</p>
-          <a class="action" href="https://github.com/voss-labs/learn-unity/blob/main/docs/setup.md">Set up Unity</a>
+          <span class="section-tag glass">01 / Lessons</span>
+          <h2>Learn it by <span class="gradient-text">doing it</span>.</h2>
+          <p>Six lessons, in order. Each one opens real code from these worlds and ends with something for you to change. Stop reading the moment you want to build.</p>
+          <div class="actions left"><a class="btn-glow" href="https://github.com/voss-labs/learn-unity/blob/main/docs/setup.md">Set up Unity</a></div>
         </div>
-        <ol>
-          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/01-scenes-and-components.md">Scenes and components</a><span>Make something move with your own script</span></li>
-          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/02-walking.md">Walking</a><span>Add a jump to the player</span></li>
-          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/03-collisions.md">Collisions</a><span>Build a way up to somewhere</span></li>
-          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/04-models-and-materials.md">Models and materials</a><span>Replace the plain fridge with a real model</span></li>
-          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/05-light-and-mood.md">Light and mood</a><span>Turn a room to night, and keep it cozy</span></li>
-          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/06-web-builds.md">Web builds</a><span>Build a world and run it in your browser</span></li>
-        </ol>
+        <div class="steps glass">
+          <ol>
+            <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/01-scenes-and-components.md">Scenes and components</a><span>Make something move with your own script</span></li>
+            <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/02-walking.md">Walking</a><span>Add a jump to the player</span></li>
+            <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/03-collisions.md">Collisions</a><span>Build a way up to somewhere</span></li>
+            <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/04-models-and-materials.md">Models and materials</a><span>Replace the plain fridge with a real model</span></li>
+            <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/05-light-and-mood.md">Light and mood</a><span>Turn a room to night, and keep it cozy</span></li>
+            <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/06-web-builds.md">Web builds</a><span>Build a world and run it on your phone</span></li>
+          </ol>
+        </div>
       </section>
 
-      <section class="split">
+      <section class="section" id="build">
         <div>
-          <h2>Then open the fourth door</h2>
+          <span class="section-tag glass">02 / Build yours</span>
+          <h2>Open the <span class="gradient-text">fourth door</span>.</h2>
           <p>Your first world can be one room. A small place you made yourself beats a big plan that never ships.</p>
-          <a class="action" href="https://github.com/voss-labs/learn-unity/blob/main/docs/add-a-world.md">Add your own world</a>
+          <div class="actions left"><a class="btn-glow" href="https://github.com/voss-labs/learn-unity/blob/main/docs/add-a-world.md">Add your own world</a></div>
         </div>
-        <ol>
-          <li><strong>Make a world</strong><span>In Unity, choose <code>Learn Unity &gt; New world</code> and give it a name</span></li>
-          <li><strong>Build your place</strong><span>Models, light, a script or two. It all stays in your own folder</span></li>
-          <li><strong>Open a pull request</strong><span>Automatic checks tell you exactly what to fix</span></li>
-          <li><strong>Send your friends the link</strong><span>Once merged, a maintainer puts it on this site with your name on it</span></li>
-        </ol>
+        <div class="steps glass">
+          <ol>
+            <li><strong>Make a world</strong><span>In Unity, choose <code>Learn Unity &gt; New world</code> and give it a name</span></li>
+            <li><strong>Build your place</strong><span>Models, light, a script or two. It all stays in your own folder</span></li>
+            <li><strong>Open a pull request</strong><span>Automatic checks tell you exactly what to fix</span></li>
+            <li><strong>Send your friends the link</strong><span>Once merged, it goes on this site, and it runs on their phones too</span></li>
+          </ol>
+        </div>
       </section>
     </main>
 
-    <footer>
-      <p>A <a href="https://vosslabs.org">VOSS Labs</a> project at Vidyalankar Institute of Technology, Mumbai. Code under the MIT License.</p>
-      <p>Furniture and textures by <a href="https://kenney.nl">Kenney</a> and <a href="https://polyhaven.com">Poly Haven</a>, CC0. Campus model from <a href="https://github.com/voss-labs/vmaps">vmaps</a>: a draft built from photos, not a measured map.</p>
+    <footer class="footer">
+      <div class="footer-top glass">
+        <a class="footer-brand" href="https://vosslabs.org">
+          <img src="images/voss-logo.png" alt="" width="32" height="32" />
+          <div><span class="brand-name">VOSS Labs</span><span class="brand-full">Vidyalankar Open Source Software Labs</span></div>
+        </a>
+        <nav class="footer-nav" aria-label="Footer navigation">
+          <a href="#worlds">Worlds</a>
+          <a href="#lessons">Lessons</a>
+          <a href="https://github.com/voss-labs/learn-unity/blob/main/CONTRIBUTING.md">Contribute</a>
+          <a href="https://github.com/voss-labs/learn-unity">GitHub</a>
+        </nav>
+      </div>
+      <small>&copy; 2026 VOSS Labs. Mumbai, India. MIT License. Furniture and textures by <a href="https://kenney.nl">Kenney</a> and <a href="https://polyhaven.com">Poly Haven</a>, CC0. Campus model from <a href="https://github.com/voss-labs/vmaps">vmaps</a>: a draft built from photos, not a measured map.</small>
     </footer>
+
+    <script>
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        const light = document.documentElement.getAttribute("data-theme") !== "light";
+        if (light) document.documentElement.setAttribute("data-theme", "light");
+        else document.documentElement.removeAttribute("data-theme");
+        localStorage.setItem("theme", light ? "light" : "dark");
+      });
+    </script>
   </body>
 </html>

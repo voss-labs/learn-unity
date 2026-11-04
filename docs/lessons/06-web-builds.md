@@ -37,8 +37,34 @@ Open the address it prints, usually http://localhost:8080, then add the world's 
 `Assets/WebGLTemplates/Walk/index.html` is the page every world loads in. Unity fills in the `{{{ DATA_FILENAME }}}` style placeholders during the build. Read how it handles three moments people actually hit:
 
 - **Loading:** a progress bar, because a world is many megabytes.
-- **Phones:** it does not start the download at all, because walking needs a keyboard and mouse, and nobody wants to spend their data to find that out.
+- **Phones:** it picks a smaller data file, draws at a lower resolution, and stops the browser from scrolling or zooming when you drag your thumbs.
 - **Failure:** it says what went wrong instead of leaving a blank page.
+
+## Why a phone gets its own data file
+
+A phone is the hardest place to run a world, for two reasons you can measure.
+
+**Texture formats.** Graphics chips read compressed textures directly, but computers and phones read different formats. Computers use one called DXT and phones use ASTC. Send DXT to a phone and Unity has to unpack every texture in software, which takes several times the memory and can crash the browser tab.
+
+**Download size vs memory.** A small download does not mean a small world. Campus once had a 14 MB download that unpacked to about 290 MB of textures in memory, because its images were embedded in the model and Unity could not compress them. Exporting them as separate image files in `Assets/Worlds/Campus/textures` let Unity compress them like any other texture.
+
+So `WebBuild.cs` builds every world twice: once with DXT, and once with ASTC and smaller textures. Both builds have the same code, so only the phone's data file is copied across, as `<world>.mobile.data.unityweb`. The page chooses which one to load:
+
+```javascript
+const phone = navigator.maxTouchPoints > 0 && matchMedia("(pointer: coarse)").matches;
+```
+
+It first draws one tiny ASTC texture and checks the result. The iPhone simulator claims to support ASTC, but its sRGB ASTC textures turn black in every mip level below the largest, so anything that fails this check gets the computer's data file instead. That file still works and just uses more memory.
+
+When the world starts on a phone, `Assets/Core/PhoneSettings.cs` also lowers the shadow quality, so the graphics chip has less to do.
+
+It also runs a small test from `Assets/Core/DepthComparison.jslib`. Shadows depend on the graphics chip comparing depth values, and the iPhone simulator's GPU cannot do that: every comparison says "in shadow", so the sun disappears and the world goes dark. If a device fails the test, the world turns shadows off instead. Finding this took a tiny test page that asked the graphics API one question directly, with Unity out of the picture. That is a good way to debug any graphics problem: remove everything you can until only the question is left.
+
+## Run it on your phone
+
+Your phone and laptop must be on the same Wi-Fi. Start the local server, find your laptop's address (`ipconfig` on Windows, `ipconfig getifaddr en0` on Mac), and open `http://THAT-ADDRESS:8080/starter/` on your phone.
+
+Always test on a real phone before you call a world finished. An emulator has your laptop's memory behind it, so it will not crash where a real phone would.
 
 ## Why our builds need no server setup
 
@@ -56,7 +82,7 @@ Web builds are large, and Git keeps every version forever, so committing them in
 
 **1. Build Starter and run it locally.** Open the browser's developer tools with F12, look at the **Network** tab, and reload. Which file is the largest? What is it?
 
-**2. Compare sizes.** Build a second world. Look in `site/<world>/Build`. Which file grows the most between Starter and Home? Why not the code file?
+**2. Compare sizes.** Build a second world. Look in `site/<world>/Build`. Which file grows the most between Starter and Home? Why not the code file? How much smaller is the phone's data file than the computer's?
 
 **3. Shrink a world.** This is the real exercise. Select a large texture in your world. In the Inspector, lower **Max Size** and click **Apply**. Rebuild and compare the file sizes, then walk up to that texture. How small can it go before anyone would notice?
 
@@ -64,6 +90,7 @@ Web builds are large, and Git keeps every version forever, so committing them in
 
 - Why does a build only contain some of the project's assets?
 - Why can't you double-click `index.html`?
+- Why does a phone need a different data file from a computer?
 - What did we give up, and what did we gain, by using Decompression Fallback?
 
 Next: [Add your own world](../add-a-world.md). You have everything you need.

@@ -36,6 +36,7 @@ const healthy = {
   "site/index.html": '<a href="tree/">Tree</a>',
   "site/tree/index.html": "game",
   "site/tree/Build/tree.wasm.unityweb": "code",
+  "site/tree/Build/tree.mobile.data.unityweb": "phone data",
 }
 
 test("a healthy repo has no problems", () => {
@@ -78,10 +79,15 @@ test("ignores web links and placeholder paths in the docs", () => {
 })
 
 test("finds a web build the landing page does not link to", () => {
-  withRepo({ ...healthy, "site/other/index.html": "game", "site/other/Build/x": "code" }, (root) => assert.match(siteProblems(root)[0], /does not link to other/))
+  withRepo({ ...healthy, "site/other/index.html": "game", "site/other/Build/other.mobile.data.unityweb": "phone data" }, (root) => assert.match(siteProblems(root)[0], /does not link to other/))
 })
 
 test("finds an incomplete web build", () => {
-  const { "site/tree/Build/tree.wasm.unityweb": _, ...files } = healthy
+  const { "site/tree/Build/tree.wasm.unityweb": _, "site/tree/Build/tree.mobile.data.unityweb": __, ...files } = healthy
   withRepo(files, (root) => assert.match(siteProblems(root)[0], /not a complete web build/))
+})
+
+test("finds a web build with no phone data file", () => {
+  const { "site/tree/Build/tree.mobile.data.unityweb": _, ...files } = healthy
+  withRepo(files, (root) => assert.match(siteProblems(root)[0], /no phone data file/))
 })

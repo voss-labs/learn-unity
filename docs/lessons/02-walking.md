@@ -19,19 +19,40 @@ Player has one child, **View**, which holds the Camera. You will see why it is s
 ```csharp
 void Update()
 {
+    touch.Update();
+    var move = touch.Move;
+    var running = touch.Running;
+
     var keyboard = Keyboard.current;
+    if (keyboard != null)
+    {
+        UpdateSpawnKeys(keyboard);
+        var keys = ReadMove(keyboard);
+        if (keys != Vector2.zero)
+        {
+            move = keys;
+            running = keyboard.shiftKey.isPressed;
+        }
+    }
+
     var mouse = Mouse.current;
-    if (keyboard == null || mouse == null)
-        return;
-    UpdateCursor(keyboard, mouse);
-    UpdateSpawnKeys(keyboard);
-    if (Cursor.lockState == CursorLockMode.Locked)
-        Look(mouse.delta.ReadValue());
-    Move(ReadMove(keyboard), keyboard.shiftKey.isPressed ? runSpeed : walkSpeed);
+    if (keyboard != null && mouse != null && !touch.Used)
+    {
+        UpdateCursor(keyboard, mouse);
+        if (Cursor.lockState == CursorLockMode.Locked)
+            Turn(mouse.delta.ReadValue() * lookDegreesPerPixel);
+    }
+
+    Turn(touch.LookDegrees);
+    if (touch.NextPlaceTapped)
+        GoTo((currentSpawn + 1) % spawns.childCount);
+    Move(move, running ? runSpeed : walkSpeed);
     if (transform.position.y < FallLimit)
         GoTo(currentSpawn);
 }
 ```
+
+Notice the shape. Wherever the input comes from, it ends up as the same two things: a direction to `Move` and some degrees to `Turn`. Adding a new kind of input only means producing those two things.
 
 ### Reading input
 
@@ -40,7 +61,7 @@ void Update()
 - `isPressed` is true for every frame the key is held. Walking uses this.
 - `wasPressedThisFrame` is true for only the one frame it went down. Jumping to a place uses this, otherwise you would jump sixty times a second.
 
-`ReadMove` turns the keys into a direction. Notice `Vector2.ClampMagnitude`. Pressing W and D together gives a vector of (1, 1), which is about 1.41 long. Without the clamp you would walk 41 percent faster diagonally.
+A phone may have no keyboard at all, which is why the code checks for `null` before using one. `ReadMove` turns the keys into a direction. Notice `Vector2.ClampMagnitude`. Pressing W and D together gives a vector of (1, 1), which is about 1.41 long. Without the clamp you would walk 41 percent faster diagonally.
 
 ### Looking
 
@@ -53,6 +74,12 @@ void ApplyLook()
 ```
 
 This is why View is a separate child. Turning left and right (yaw) turns your whole body, so W always means "the way you are facing". Looking up and down (pitch) only tilts your head. If the body tilted too, looking at the ceiling would make W walk you into the ceiling.
+
+### Touch
+
+On a phone, `Assets/Core/TouchControls.cs` does the same job with fingers. A finger that lands on the left half of the screen becomes a thumbstick: the further it drags from where it landed, the faster you walk, and dragging all the way makes you run. A finger on the right half turns the view.
+
+Each finger has an id, and the class remembers which id is doing which job. That is how you can walk and look at once, with two thumbs doing different things. The on-screen stick and the Next place button are drawn by `Assets/Core/Hud.cs`.
 
 ### Moving
 
@@ -80,7 +107,9 @@ The number keys call `GoTo`, which moves you to a child of the `spawns` object. 
 
 You will hit a bug: nothing happens. Read `Move` carefully. On the ground, it overwrites `verticalSpeed` every frame, so your jump is erased before it is used. Working out where the check has to go is the lesson.
 
-**4. Add a crouch.** While Left Ctrl is held, lower `view.localPosition` and shrink `body.height`. What goes wrong if you forget `body.center`? What happens if you stand up under something low?
+**4. Try it on a phone.** Lesson 6 shows how to run a world on your phone. Is the stick too sensitive? Change `StickRadiusOfScreen` in `TouchControls.cs` and feel the difference.
+
+**5. Add a crouch.** While Left Ctrl is held, lower `view.localPosition` and shrink `body.height`. What goes wrong if you forget `body.center`? What happens if you stand up under something low?
 
 ## Check yourself
 

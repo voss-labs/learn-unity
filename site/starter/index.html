@@ -2,25 +2,34 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#050510" />
-    <link rel="icon" href="data:," />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <title>Starter | learn-unity by VOSS Labs</title>
     <style>
-      html, body { height: 100%; margin: 0; background: #050510; color: #f0eef5; font: 500 16px/1.5 Manrope, system-ui, sans-serif; overflow: hidden; }
-      canvas { display: block; width: 100%; height: 100%; outline: none; }
-      #cover { position: fixed; inset: 0; display: grid; place-content: center; gap: 12px; width: min(420px, calc(100% - 32px)); margin: auto; }
+      html, body { position: fixed; inset: 0; margin: 0; overflow: hidden; overscroll-behavior: none; background: #050510; color: #f0eef5; font: 500 16px/1.5 Manrope, system-ui, sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+      canvas { position: fixed; inset: 0; display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+      #cover { position: fixed; inset: 0; display: grid; place-content: center; gap: 14px; width: min(420px, calc(100% - 40px)); margin: auto; background: #050510; }
       #cover[hidden] { display: none; }
-      h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+      #cover img { width: 72px; height: 72px; border-radius: 16px; }
+      h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
       p { margin: 0; color: #9b97a8; }
-      #track { height: 4px; background: #2a2a40; border-radius: 2px; overflow: hidden; }
-      #bar { width: 0; height: 100%; background: #f0eef5; }
-      a { color: inherit; }
+      #track { height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; }
+      #track[hidden] { display: none; }
+      #bar { width: 0; height: 100%; background: linear-gradient(135deg, #4d7cff, #6e8efb, #8b5cf6); }
+      a { color: #6e8efb; }
+      #turn { position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); padding: 8px 16px; background: rgba(5, 5, 16, 0.72); border-radius: 100px; font-size: 14px; white-space: nowrap; pointer-events: none; opacity: 0; }
+      @media (orientation: portrait) and (pointer: coarse) { #turn.ready { animation: hint 6s ease-out forwards; } }
+      @keyframes hint { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { #turn.ready { animation-duration: 0.01s; } }
     </style>
   </head>
   <body>
     <canvas id="game" tabindex="-1"></canvas>
+    <p id="turn">Turn your phone sideways for a wider view</p>
     <div id="cover">
+      <img src="../images/voss-logo.png" alt="VOSS Labs" />
       <h1>Starter</h1>
       <div id="track"><div id="bar"></div></div>
       <p id="status">Loading</p>
@@ -30,44 +39,92 @@
       const cover = document.getElementById("cover");
       const status = document.getElementById("status");
       const bar = document.getElementById("bar");
+      const phone = navigator.maxTouchPoints > 0 && matchMedia("(pointer: coarse)").matches;
+      const astcDrawsCorrectly = () => {
+        const gl = document.createElement("canvas").getContext("webgl2");
+        const astc = gl && gl.getExtension("WEBGL_compressed_texture_astc");
+        if (!astc) return false;
+        const shader = (type, source) => {
+          const compiled = gl.createShader(type);
+          gl.shaderSource(compiled, source);
+          gl.compileShader(compiled);
+          return compiled;
+        };
+        const program = gl.createProgram();
+        gl.attachShader(program, shader(gl.VERTEX_SHADER, "#version 300 es\nin vec2 p;void main(){gl_Position=vec4(p,0,1);}"));
+        gl.attachShader(program, shader(gl.FRAGMENT_SHADER, "#version 300 es\nprecision highp float;uniform sampler2D s;out vec4 c;void main(){c=textureLod(s,vec2(.5),1.);}"));
+        gl.bindAttribLocation(program, 0, "p");
+        gl.linkProgram(program);
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+        const whiteBlock = [0xfc, 0xfd, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
+        const format = astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texStorage2D(gl.TEXTURE_2D, 2, format, 8, 8);
+        gl.compressedTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 8, 8, format, new Uint8Array([...whiteBlock, ...whiteBlock, ...whiteBlock, ...whiteBlock]));
+        gl.compressedTexSubImage2D(gl.TEXTURE_2D, 1, 0, 0, 4, 4, format, new Uint8Array(whiteBlock));
+        const color = gl.createTexture();
+        const texture = gl.getParameter(gl.TEXTURE_BINDING_2D);
+        gl.bindTexture(gl.TEXTURE_2D, color);
+        gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, 4, 4);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, gl.createFramebuffer());
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, color, 0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.viewport(0, 0, 4, 4);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        const pixel = new Uint8Array(4);
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        const lose = gl.getExtension("WEBGL_lose_context");
+        if (lose) lose.loseContext();
+        return pixel[0] > 127;
+      };
+      const dataFile = "starter.data.unityweb";
       const fail = (message) => {
         document.getElementById("track").hidden = true;
         status.textContent = message;
       };
 
-      if (!matchMedia("(pointer: fine)").matches) {
-        fail("This walkaround needs a computer with a keyboard and mouse.");
-      } else {
-        const script = document.createElement("script");
-        script.src = "Build/starter.loader.js";
-        script.onerror = () => fail("The game files could not be loaded. Try reloading the page.");
-        script.onload = () =>
-          createUnityInstance(
-            document.getElementById("game"),
-            {
-              dataUrl: "Build/starter.data.unityweb",
-              frameworkUrl: "Build/starter.framework.js.unityweb",
-              codeUrl: "Build/starter.wasm.unityweb",
-              streamingAssetsUrl: "StreamingAssets",
-              companyName: "VOSS Labs",
-              productName: "Starter",
-              productVersion: "0.1.0",
-              devicePixelRatio: Math.min(window.devicePixelRatio, 1.5),
-              showBanner: (message, type) => {
-                if (type === "error") fail(message);
-              },
+      for (const gesture of ["gesturestart", "dblclick", "contextmenu"])
+        document.addEventListener(gesture, (event) => event.preventDefault());
+      document.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
+
+      const script = document.createElement("script");
+      script.src = "Build/starter.loader.js";
+      script.onerror = () => fail("The game files could not be loaded. Check your connection and reload the page.");
+      script.onload = () =>
+        createUnityInstance(
+          document.getElementById("game"),
+          {
+            dataUrl: `Build/${phone && astcDrawsCorrectly() ? dataFile.replace(".data", ".mobile.data") : dataFile}`,
+            frameworkUrl: "Build/starter.framework.js.unityweb",
+            codeUrl: "Build/starter.wasm.unityweb",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "VOSS Labs",
+            productName: "Starter",
+            productVersion: "0.1.0",
+            devicePixelRatio: Math.min(window.devicePixelRatio, 1.5),
+            showBanner: (message, type) => {
+              if (type === "error") fail(message);
             },
-            (progress) => {
-              bar.style.width = `${progress * 100}%`;
-            }
-          )
-            .then((instance) => {
-              window.unityInstance = instance;
-              cover.hidden = true;
-            })
-            .catch(() => fail("This browser could not start the game. WebGL 2 is required."));
-        document.body.appendChild(script);
-      }
+          },
+          (progress) => {
+            bar.style.width = `${progress * 100}%`;
+          }
+        )
+          .then((instance) => {
+            window.unityInstance = instance;
+            cover.hidden = true;
+            document.getElementById("turn").classList.add("ready");
+          })
+          .catch((error) => {
+            console.error(error);
+            fail("This device could not start the world. Close other tabs and reload, or try Starter, the smallest world.");
+          });
+      document.body.appendChild(script);
     </script>
   </body>
 </html>

@@ -31,6 +31,7 @@ Press Play often. Keep what works, and delete the Collision playground once you 
 - Put everything of yours inside your world's folder.
 - Give any script you write a name that is yours, like `TreehouseLift`. Unity does not allow two classes with the same name in the project.
 - Make sure there is a floor under every spawn, or people fall.
+- Your world runs on phones too, and the walking controls come with the Player. Keep your models and textures reasonable, because a phone has far less memory than your laptop. [Lesson 6](lessons/06-web-builds.md) explains why.
 
 ## 3. Use only assets you are allowed to use
 

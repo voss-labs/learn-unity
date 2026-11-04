@@ -17,6 +17,7 @@ public class Walker : MonoBehaviour
     [SerializeField] float lookDegreesPerPixel = 0.12f;
     [SerializeField] float maxDrop = 0.45f;
 
+    readonly TouchControls touch = new();
     CharacterController body;
     float yaw, pitch, verticalSpeed;
     int currentSpawn;
@@ -28,6 +29,10 @@ public class Walker : MonoBehaviour
         set => spawns = value;
     }
 
+    void OnEnable() => touch.Enable();
+
+    void OnDisable() => touch.Disable();
+
     void Start()
     {
         body = GetComponent<CharacterController>();
@@ -36,15 +41,34 @@ public class Walker : MonoBehaviour
 
     void Update()
     {
+        touch.Update();
+        var move = touch.Move;
+        var running = touch.Running;
+
         var keyboard = Keyboard.current;
+        if (keyboard != null)
+        {
+            UpdateSpawnKeys(keyboard);
+            var keys = ReadMove(keyboard);
+            if (keys != Vector2.zero)
+            {
+                move = keys;
+                running = keyboard.shiftKey.isPressed;
+            }
+        }
+
         var mouse = Mouse.current;
-        if (keyboard == null || mouse == null)
-            return;
-        UpdateCursor(keyboard, mouse);
-        UpdateSpawnKeys(keyboard);
-        if (Cursor.lockState == CursorLockMode.Locked)
-            Look(mouse.delta.ReadValue());
-        Move(ReadMove(keyboard), keyboard.shiftKey.isPressed ? runSpeed : walkSpeed);
+        if (keyboard != null && mouse != null && !touch.Used)
+        {
+            UpdateCursor(keyboard, mouse);
+            if (Cursor.lockState == CursorLockMode.Locked)
+                Turn(mouse.delta.ReadValue() * lookDegreesPerPixel);
+        }
+
+        Turn(touch.LookDegrees);
+        if (touch.NextPlaceTapped)
+            GoTo((currentSpawn + 1) % spawns.childCount);
+        Move(move, running ? runSpeed : walkSpeed);
         if (transform.position.y < FallLimit)
             GoTo(currentSpawn);
     }
@@ -74,10 +98,10 @@ public class Walker : MonoBehaviour
 
     static float Axis(bool positive, bool negative) => (positive ? 1f : 0f) - (negative ? 1f : 0f);
 
-    void Look(Vector2 delta)
+    void Turn(Vector2 degrees)
     {
-        yaw += delta.x * lookDegreesPerPixel;
-        pitch = Mathf.Clamp(pitch - delta.y * lookDegreesPerPixel, -80f, 80f);
+        yaw += degrees.x;
+        pitch = Mathf.Clamp(pitch - degrees.y, -80f, 80f);
         ApplyLook();
     }
 
@@ -128,6 +152,6 @@ public class Walker : MonoBehaviour
     void OnGUI()
     {
         var label = Time.time < spawnLabelUntil ? spawns.GetChild(currentSpawn).name : null;
-        Hud.Draw(label, Cursor.lockState != CursorLockMode.Locked);
+        Hud.Draw(label, Cursor.lockState != CursorLockMode.Locked, touch);
     }
 }

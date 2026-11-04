@@ -2,7 +2,7 @@
 
 Learn Unity by walking through real worlds, opening their code, and shipping your own.
 
-A [VOSS Labs](https://vosslabs.org) project at Vidyalankar Institute of Technology, Mumbai. There is no course to finish. You play a world in your browser, open the same world in Unity, change it, and add a world of your own with a pull request. When it merges, it goes live and it is yours.
+A [VOSS Labs](https://vosslabs.org) project at Vidyalankar Institute of Technology, Mumbai. There is no course to finish. You play a world in your browser, on your computer or your phone, open the same world in Unity, change it, and add a world of your own with a pull request. When it merges, it goes live and it is yours.
 
 No Unity experience needed. You need a computer that can run Unity and a free GitHub account.
 
@@ -26,7 +26,7 @@ No Unity experience needed. You need a computer that can run Unity and a free Gi
 | [3. Collisions](docs/lessons/03-collisions.md) | Colliders, ramps, raycasts | Build a way up to somewhere |
 | [4. Models and materials](docs/lessons/04-models-and-materials.md) | Importing models, scale, pivots, textures | Replace the plain fridge with a real model |
 | [5. Light and mood](docs/lessons/05-light-and-mood.md) | Why a room feels cozy or cold | Turn a room to night |
-| [6. Web builds](docs/lessons/06-web-builds.md) | How a Unity project runs in a browser | Build a world and run it locally |
+| [6. Web builds](docs/lessons/06-web-builds.md) | How a Unity project runs in a browser, on computers and phones | Build a world and run it on your phone |
 
 3. [Add your own world](docs/add-a-world.md). This is the point of the repo. One menu click gives you a world to start from.
 
@@ -34,7 +34,7 @@ No Unity experience needed. You need a computer that can run Unity and a free Gi
 
 ```text
 Assets/
-  Core/          what every world shares: Walker, Hud, Spinner and the Player prefab
+  Core/          what every world shares: walking, touch controls, phone settings and the Player prefab
   Worlds/        one folder per world, each with its own README
   Editor/        the New World window and the web build
   WebGLTemplates/  the page each world loads in
@@ -68,6 +68,8 @@ node --test
 The check catches the mistakes Unity projects make most often, such as a missing `.meta` file. It tells you which file and what to do.
 
 ## Deploying
+
+**Live site:** [learn-unity-nu.vercel.app](https://learn-unity-nu.vercel.app)
 
 Vercel serves `site/`, as set in [vercel.json](vercel.json). There is no build step on Vercel because it cannot run Unity, so the web builds are committed. Import the repo in Vercel once and every push to `main` deploys. [Lesson 6](docs/lessons/06-web-builds.md) explains the compression setting that makes this work with no server configuration.
 

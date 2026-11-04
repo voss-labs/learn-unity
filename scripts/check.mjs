@@ -78,6 +78,8 @@ export function siteProblems(root) {
       const problems = []
       if (!existsSync(join(site, name, "index.html")) || !existsSync(join(site, name, "Build")))
         problems.push(`site/${name} is not a complete web build. Build the world again.`)
+      else if (!existsSync(join(site, name, "Build", `${name}.mobile.data.unityweb`)))
+        problems.push(`site/${name} has no phone data file, so it would not run well on phones. Build the world again.`)
       if (!html.includes(`href="${name}/"`))
         problems.push(`site/index.html does not link to ${name}/. Add a doorway for it.`)
       return problems
