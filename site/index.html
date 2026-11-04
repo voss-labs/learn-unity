@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Learn Unity by walking through real worlds, opening their code, and shipping your own. A VOSS Labs project." />
+    <meta name="theme-color" content="#050510" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f3f0" media="(prefers-color-scheme: light)" />
+    <title>learn-unity | VOSS Labs</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark light;
+        --bg: #050510;
+        --text: #f0eef5;
+        --text-2: #9b97a8;
+        --line: #2a2a40;
+        --grid: #5c5c8c;
+        --lamp: #ffc58f;
+        --gutter: clamp(16px, 4vw, 56px);
+        font: 500 17px/1.6 Manrope, system-ui, sans-serif;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f3f0;
+          --text: #0c0c14;
+          --text-2: #4a4856;
+          --line: #d6d2ca;
+          --grid: #a39d91;
+          --lamp: #8f4a12;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); }
+      a { color: inherit; text-underline-offset: 3px; }
+      a:hover { color: var(--lamp); }
+      :focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+      code { font: 400 0.9em "Fira Code", ui-monospace, monospace; }
+
+      .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding: 20px var(--gutter); }
+      .top strong { font-weight: 800; letter-spacing: -0.01em; }
+      .top nav { display: flex; gap: 20px; }
+
+      .intro { padding: clamp(24px, 3.5vw, 44px) var(--gutter) clamp(24px, 2.6vw, 32px); }
+      h1 { margin: 0; font-size: clamp(2.5rem, 5.6vw, 5.4rem); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; }
+      h1 span { display: block; }
+      .intro p { max-width: 62ch; margin: 18px 0 0; color: var(--text-2); font-size: 1.05rem; }
+
+      .doors { display: flex; gap: 6px; height: clamp(420px, calc(100vh - 432px), 680px); padding: 0 var(--gutter); border-bottom: 1px solid var(--line); }
+      .door { position: relative; display: flex; flex: 1 1 0; flex-direction: column; justify-content: flex-end; min-width: 0; padding: 20px; overflow: hidden; color: #f0eef5; background: #0e0e1c; transition: flex-grow 320ms ease; }
+      .door:hover, .door:focus-within { flex-grow: 1.7; }
+      .door img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .door::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(5 5 16 / 0.92), rgb(5 5 16 / 0.2) 55%, transparent); }
+      .door > div { position: relative; z-index: 1; }
+      .door h2 { margin: 0; font-size: clamp(1.4rem, 2.2vw, 1.9rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+      .door p { margin: 8px 0 12px; max-width: 34ch; font-size: 0.92rem; line-height: 1.45; color: #d5d2de; }
+      .door a { color: inherit; }
+      .door .walk { font-weight: 700; }
+      .door .walk::before { content: ""; position: absolute; inset: 0; z-index: 1; }
+      .door:has(.walk:hover) .walk { color: #ffc58f; }
+      .door .how { position: relative; z-index: 2; margin-left: 14px; font-size: 0.92rem; }
+
+      .door.yours { background: var(--bg); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+      .door.yours::after { display: none; }
+      .door.yours p { color: var(--text-2); }
+      .door.yours .grid { position: absolute; left: -200%; right: -200%; bottom: 0; height: 1600px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 56px 56px; background-position: center bottom; transform: perspective(640px) rotateX(52deg); transform-origin: bottom; mask-image: linear-gradient(to top, black 15%, transparent 85%); }
+      .door.yours > div { background: linear-gradient(to top, var(--bg) 78%, transparent); margin: -20px; padding: 44px 20px 20px; }
+      .door.yours:hover, .door.yours:focus-within { box-shadow: inset 0 0 0 1px var(--lamp); }
+
+      .note { margin: 12px var(--gutter) 0; color: var(--text-2); font-size: 0.88rem; }
+
+      .split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px clamp(32px, 6vw, 96px); padding: clamp(56px, 8vw, 112px) var(--gutter) 0; }
+      .split h2 { margin: 0; font-size: clamp(1.9rem, 3.6vw, 3rem); font-weight: 800; line-height: 1.08; letter-spacing: -0.025em; }
+      .split > div > p { margin: 16px 0 0; max-width: 42ch; color: var(--text-2); }
+
+      ol { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+      li { counter-increment: step; display: grid; grid-template-columns: 2.2em minmax(0, 1fr); padding: 14px 0; border-top: 1px solid var(--line); }
+      li:last-child { border-bottom: 1px solid var(--line); }
+      li::before { content: counter(step); color: var(--text-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+      li > * { grid-column: 2; margin: 0; }
+      li strong, li a { font-weight: 700; }
+      li span { display: block; color: var(--text-2); font-size: 0.94rem; }
+
+      .action { display: inline-block; margin-top: 24px; padding: 11px 18px; background: var(--text); color: var(--bg); font-weight: 700; text-decoration: none; }
+      .action:hover { background: var(--lamp); color: var(--bg); }
+
+      footer { margin-top: clamp(56px, 8vw, 112px); padding: 24px var(--gutter) 40px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 0.88rem; }
+      footer p { max-width: 80ch; margin: 0 0 6px; }
+
+      @media (max-width: 860px) {
+        .doors { flex-direction: column; height: auto; padding-bottom: 6px; }
+        .door { flex: none; height: 280px; }
+        .door:hover, .door:focus-within { flex-grow: 0; }
+        .split { grid-template-columns: minmax(0, 1fr); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .door { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <strong>learn-unity</strong>
+      <nav aria-label="Main">
+        <a href="#lessons">Lessons</a>
+        <a href="https://github.com/voss-labs/learn-unity">GitHub</a>
+        <a href="https://vosslabs.org">VOSS Labs</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro">
+        <h1><span>Walk through three worlds.</span> <span>Then build the fourth.</span></h1>
+        <p>Play a world in your browser, open the same world in Unity, change how it works, and add your own with a pull request. When it merges, it goes live here. No Unity experience needed.</p>
+      </section>
+
+      <section class="doors" aria-label="Worlds">
+        <article class="door">
+          <img src="images/starter.jpg" style="object-position: 36% 50%" alt="A walled courtyard with a ramp, low blocks and a spinning cube on a pedestal" />
+          <div>
+            <h2>Starter</h2>
+            <p>A courtyard with a ramp, a step and a spinning cube. Every new world begins as a copy of it.</p>
+            <a class="walk" href="starter/">Walk it</a>
+            <a class="how" href="https://github.com/voss-labs/learn-unity/tree/main/Assets/Worlds/Starter">How it's built</a>
+          </div>
+        </article>
+        <article class="door">
+          <img src="images/campus.jpg" style="object-position: 28% 50%" alt="The main hall of the VIT campus model, with banners, balconies and stairs going down" />
+          <div>
+            <h2>Campus</h2>
+            <p>Level 1 of the VIT main building, generated from code. Eight viewpoints and three working staircases.</p>
+            <a class="walk" href="campus/">Walk it</a>
+            <a class="how" href="https://github.com/voss-labs/learn-unity/tree/main/Assets/Worlds/Campus">How it's built</a>
+          </div>
+        </article>
+        <article class="door">
+          <img src="images/home.jpg" style="object-position: 30% 50%" alt="A warmly lit living room with a leather sofa, a retro TV and a kitchen counter" />
+          <div>
+            <h2>Home</h2>
+            <p>A cozy living room and kitchen, built twice so you can compare: low-poly and realistic.</p>
+            <a class="walk" href="home/">Walk it</a>
+            <a class="how" href="https://github.com/voss-labs/learn-unity/tree/main/Assets/Worlds/Home">How it's built</a>
+          </div>
+        </article>
+        <article class="door yours">
+          <span class="grid" aria-hidden="true"></span>
+          <div>
+            <h2>Your world</h2>
+            <p>Empty for now. This door opens when you add yours.</p>
+            <a class="walk" href="https://github.com/voss-labs/learn-unity/blob/main/docs/add-a-world.md">Start building</a>
+          </div>
+        </article>
+      </section>
+      <p class="note">Walking needs a computer with a keyboard and mouse. Each world is an 11 MB to 48 MB download.</p>
+
+      <section class="split" id="lessons">
+        <div>
+          <h2>Six lessons, in order</h2>
+          <p>Each one opens real code from these worlds and ends with something for you to change. You learn it by doing it, and you can stop reading the moment you want to build.</p>
+          <a class="action" href="https://github.com/voss-labs/learn-unity/blob/main/docs/setup.md">Set up Unity</a>
+        </div>
+        <ol>
+          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/01-scenes-and-components.md">Scenes and components</a><span>Make something move with your own script</span></li>
+          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/02-walking.md">Walking</a><span>Add a jump to the player</span></li>
+          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/03-collisions.md">Collisions</a><span>Build a way up to somewhere</span></li>
+          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/04-models-and-materials.md">Models and materials</a><span>Replace the plain fridge with a real model</span></li>
+          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/05-light-and-mood.md">Light and mood</a><span>Turn a room to night, and keep it cozy</span></li>
+          <li><a href="https://github.com/voss-labs/learn-unity/blob/main/docs/lessons/06-web-builds.md">Web builds</a><span>Build a world and run it in your browser</span></li>
+        </ol>
+      </section>
+
+      <section class="split">
+        <div>
+          <h2>Then open the fourth door</h2>
+          <p>Your first world can be one room. A small place you made yourself beats a big plan that never ships.</p>
+          <a class="action" href="https://github.com/voss-labs/learn-unity/blob/main/docs/add-a-world.md">Add your own world</a>
+        </div>
+        <ol>
+          <li><strong>Make a world</strong><span>In Unity, choose <code>Learn Unity &gt; New world</code> and give it a name</span></li>
+          <li><strong>Build your place</strong><span>Models, light, a script or two. It all stays in your own folder</span></li>
+          <li><strong>Open a pull request</strong><span>Automatic checks tell you exactly what to fix</span></li>
+          <li><strong>Send your friends the link</strong><span>Once merged, a maintainer puts it on this site with your name on it</span></li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      <p>A <a href="https://vosslabs.org">VOSS Labs</a> project at Vidyalankar Institute of Technology, Mumbai. Code under the MIT License.</p>
+      <p>Furniture and textures by <a href="https://kenney.nl">Kenney</a> and <a href="https://polyhaven.com">Poly Haven</a>, CC0. Campus model from <a href="https://github.com/voss-labs/vmaps">vmaps</a>: a draft built from photos, not a measured map.</p>
+    </footer>
+  </body>
+</html>

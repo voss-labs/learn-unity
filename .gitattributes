@@ -1,0 +1,7 @@
+* text=auto
+*.unityweb binary
+*.glb binary
+*.fbx binary
+*.bin binary
+*.jpg binary
+*.png binary

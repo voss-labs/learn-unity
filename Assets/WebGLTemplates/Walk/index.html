@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#050510" />
+    <link rel="icon" href="data:," />
+    <title>{{{ PRODUCT_NAME }}} | learn-unity by VOSS Labs</title>
+    <style>
+      html, body { height: 100%; margin: 0; background: #050510; color: #f0eef5; font: 500 16px/1.5 Manrope, system-ui, sans-serif; overflow: hidden; }
+      canvas { display: block; width: 100%; height: 100%; outline: none; }
+      #cover { position: fixed; inset: 0; display: grid; place-content: center; gap: 12px; width: min(420px, calc(100% - 32px)); margin: auto; }
+      #cover[hidden] { display: none; }
+      h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+      p { margin: 0; color: #9b97a8; }
+      #track { height: 4px; background: #2a2a40; border-radius: 2px; overflow: hidden; }
+      #bar { width: 0; height: 100%; background: #f0eef5; }
+      a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" tabindex="-1"></canvas>
+    <div id="cover">
+      <h1>{{{ PRODUCT_NAME }}}</h1>
+      <div id="track"><div id="bar"></div></div>
+      <p id="status">Loading</p>
+      <a href="../">Back to learn-unity</a>
+    </div>
+    <script>
+      const cover = document.getElementById("cover");
+      const status = document.getElementById("status");
+      const bar = document.getElementById("bar");
+      const fail = (message) => {
+        document.getElementById("track").hidden = true;
+        status.textContent = message;
+      };
+
+      if (!matchMedia("(pointer: fine)").matches) {
+        fail("This walkaround needs a computer with a keyboard and mouse.");
+      } else {
+        const script = document.createElement("script");
+        script.src = "Build/{{{ LOADER_FILENAME }}}";
+        script.onerror = () => fail("The game files could not be loaded. Try reloading the page.");
+        script.onload = () =>
+          createUnityInstance(
+            document.getElementById("game"),
+            {
+              dataUrl: "Build/{{{ DATA_FILENAME }}}",
+              frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+              codeUrl: "Build/{{{ CODE_FILENAME }}}",
+              streamingAssetsUrl: "StreamingAssets",
+              companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+              productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+              productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+              devicePixelRatio: Math.min(window.devicePixelRatio, 1.5),
+              showBanner: (message, type) => {
+                if (type === "error") fail(message);
+              },
+            },
+            (progress) => {
+              bar.style.width = `${progress * 100}%`;
+            }
+          )
+            .then((instance) => {
+              window.unityInstance = instance;
+              cover.hidden = true;
+            })
+            .catch(() => fail("This browser could not start the game. WebGL 2 is required."));
+        document.body.appendChild(script);
+      }
+    </script>
+  </body>
+</html>
